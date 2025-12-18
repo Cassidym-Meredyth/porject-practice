@@ -4,9 +4,10 @@ services:
     env_file: .env
     ports:
       - "80:8080"
+    restart: always
     networks:
-      test_case-net:
-        ipv4_address: 172.20.0.10
+      project_practice-net:
+        ipv4_address: 172.10.0.10
 
   prometheus:
     image: prom/prometheus:main
@@ -15,16 +16,62 @@ services:
     volumes:
       - prometheus_data:/prometheus
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
     networks:
-      test_case-net:
-        ipv4_address: 172.20.0.11
+      project_practice-net:
+        ipv4_address: 172.10.0.11
+
+
+  sonarqube:
+    image: sonarqube:community
+    ports:
+      - "9000:9000"
+    restart: always
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    depends_on:
+      - postgres
+    networks:
+      project_practice-net:
+        ipv4_address: 172.10.0.12
+
+  postgres:
+    image: postgres:15-trixie
+    environment:
+      POSTGRES_DB: sonar
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isreadu -U sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgres/data
+    networks:
+      project_practice-net:
+        ipv4_address: 172.10.0.13
+
 
 volumes:
   prometheus_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgres_data:
 
 networks:
-  test_case-net:
+  project_practice-net:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/24
+        - subnet: 172.10.0.0/24
