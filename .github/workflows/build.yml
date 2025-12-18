@@ -23,8 +23,7 @@ jobs:
       - name: Build
         run: go build -v ./...
  
-      - name: SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v6
+      - name: SonarQube scan via Docker
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
