@@ -22,7 +22,7 @@ jobs:
 
       - name: Build
         run: go build -v ./...
-
+ 
       - name: SonarQube scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
